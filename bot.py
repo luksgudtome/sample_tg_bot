@@ -9,20 +9,24 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Hello! I'm alive and deployed on Render!")
 
 async def open_page(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("Opening page...")
+    try:
+        await update.message.reply_text("Opening page...")
 
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
-        await update.message.reply_text("Browser started")
-        page = await browser.new_page()
-        await update.message.reply_text("Page opened")
-        await page.goto("https://the-internet.herokuapp.com/login")
-        await update.message.reply_text("Navigated to internetherokuapp")
-        title = await page.title()
-        await update.message.reply_text("Title extracted, closing...")
-        await browser.close()
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True, args=["--no-sandbox"])
+            await update.message.reply_text("Browser started")
+            page = await browser.new_page()
+            await update.message.reply_text("Page opened")
+            await page.goto("https://the-internet.herokuapp.com/login")
+            await update.message.reply_text("Navigated to site")
+            title = await page.title()
+            await update.message.reply_text("Title extracted, closing...")
+            await browser.close()
 
-    await update.message.reply_text(f"Page title: {title}")
+        await update.message.reply_text(f"Page title: {title}")
+
+    except Exception as e:
+        await update.message.reply_text(f"Error: {e}")
 
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
