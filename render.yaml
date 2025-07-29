@@ -5,8 +5,3 @@ services:
     plan: free
     buildCommand: ""
     startCommand: "python bot.py"
-    envVars:
-      - key: BOT_TOKEN
-        value: 8131636286:AAHQF7s0W57LiIx88_POayP5gNa7hbhzzAY
-      - key: WEBHOOK_URL
-        value: https://sample_tg_bot.onrender.com
