@@ -1,5 +1,6 @@
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from playwright.async_api import async_playwright
 import os
 
 TOKEN = os.getenv("BOT_TOKEN")
