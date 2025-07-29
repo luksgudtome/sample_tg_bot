@@ -1,6 +1,7 @@
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 from playwright.async_api import async_playwright
+import asyncio
 import os
 
 TOKEN = os.getenv("BOT_TOKEN")
@@ -8,7 +9,8 @@ TOKEN = os.getenv("BOT_TOKEN")
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Hello! I'm alive and deployed on Render!")
 
-async def open_page(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# Task function that handles the actual Playwright work
+async def handle_open_page(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         await update.message.reply_text("Opening page...")
 
@@ -28,12 +30,17 @@ async def open_page(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"Error: {e}")
 
+# Handler that creates a background task
+async def open_page(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    asyncio.create_task(handle_open_page(update, context))
+    await update.message.reply_text("Your request is being processed in the background...")
+
 def main():
     app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("open", open_page))
-    # Webhook setup
+
     port = int(os.environ.get("PORT", 8443))
     webhook_url = os.environ["WEBHOOK_URL"]
 
