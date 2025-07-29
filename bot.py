@@ -6,29 +6,29 @@ import os
 
 TOKEN = os.getenv("BOT_TOKEN")
 
+# Semaphore to allow only 3 concurrent Playwright tasks
+semaphore = asyncio.Semaphore(3)
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Hello! I'm alive and deployed on Render!")
 
 # Task function that handles the actual Playwright work
 async def handle_open_page(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        await update.message.reply_text("Opening page...")
+    async with semaphore:  # Limit concurrent access
+        try:
+            await update.message.reply_text(f"Opening page: {update.message.text}")
+            
+            async with async_playwright() as p:
+                browser = await p.chromium.launch(headless=True, args=["--no-sandbox"]) 
+                page = await browser.new_page() 
+                await page.goto("https://the-internet.herokuapp.com/login") 
+                title = await page.title()
+                await browser.close()
 
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=True, args=["--no-sandbox"])
-            await update.message.reply_text("Browser started")
-            page = await browser.new_page()
-            await update.message.reply_text("Page opened")
-            await page.goto("https://the-internet.herokuapp.com/login")
-            await update.message.reply_text("Navigated to site")
-            title = await page.title()
-            await update.message.reply_text("Title extracted, closing...")
-            await browser.close()
+            await update.message.reply_text(f"Page title: {update.message.text}")
 
-        await update.message.reply_text(f"Page title: {title}")
-
-    except Exception as e:
-        await update.message.reply_text(f"Error: {e}")
+        except Exception as e:
+            await update.message.reply_text(f"Error: {e}")
 
 # Handler that creates a background task
 async def open_page(update: Update, context: ContextTypes.DEFAULT_TYPE):
